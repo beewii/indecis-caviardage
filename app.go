@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
@@ -241,7 +242,7 @@ func (a *app) redact(w http.ResponseWriter, r *http.Request) {
 	if isCSV(ext) {
 		res, err = processCSV(r.Context(), m, doc.Reader(), out, ext, doc.Size(), set, progress)
 	} else {
-		res, err = a.redactFile(m, doc, out, ext, set)
+		res, err = a.redactFile(r.Context(), m, doc, out, ext, set)
 	}
 	elapsed := time.Since(start)
 	a.models <- m
@@ -276,7 +277,7 @@ func (a *app) redact(w http.ResponseWriter, r *http.Request) {
 // redactFile redacts a Word or ODT document through files, which
 // go-anon's readers need: they exist in /dev/shm for the time of the
 // processing only, then are overwritten with zeros.
-func (a *app) redactFile(m *indecis.Model, doc, out *secret, ext string, set settings) (*response, error) {
+func (a *app) redactFile(ctx context.Context, m *indecis.Model, doc, out *secret, ext string, set settings) (*response, error) {
 	dir, err := os.MkdirTemp(a.tmp, tempPrefix)
 	if err != nil {
 		return nil, err
@@ -298,7 +299,7 @@ func (a *app) redactFile(m *indecis.Model, doc, out *secret, ext string, set set
 	if err != nil {
 		return nil, err
 	}
-	res, err := process(m, walkers[ext], in, produced, set)
+	res, err := process(ctx, m, walkers[ext], in, produced, set)
 	if err != nil {
 		return nil, err
 	}

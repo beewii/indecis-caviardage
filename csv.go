@@ -95,7 +95,7 @@ func newRecognizer(m *indecis.Model, bias float64) *recognizer.Recognizer {
 // found beforehand, in the row and the batch.
 type preset struct{ found []ner.Entity }
 
-func (p *preset) Recognize(string) ([]ner.Entity, error) { return p.found, nil }
+func (p *preset) Recognize(context.Context, string) ([]ner.Entity, error) { return p.found, nil }
 
 // csvRow is a record and, for each non-empty cell, the line the model
 // reads and where the value starts in it.
@@ -214,7 +214,7 @@ func processCSV(ctx context.Context, m *indecis.Model, in io.Reader, out io.Writ
 					found = c
 				} else if d, ok := direct[row.lines[j]]; ok {
 					found = d
-				} else if _, err := rec.Recognize(row.lines[j]); err != nil {
+				} else if _, err := rec.Recognize(ctx, row.lines[j]); err != nil {
 					return err
 				} else if len(cached) < maxCached {
 					cached[row.lines[j]] = found
@@ -239,7 +239,7 @@ func processCSV(ctx context.Context, m *indecis.Model, in io.Reader, out io.Writ
 				if len(cell.found) == 0 {
 					continue
 				}
-				result, err := anon.Anonymize(value, anonymizer.WithSession(session), anonymizer.WithVerification())
+				result, err := anon.Anonymize(ctx, value, anonymizer.WithSession(session), anonymizer.WithVerification())
 				if err != nil {
 					return fmt.Errorf("ligne %d : %w", rows[i].Line, err)
 				}

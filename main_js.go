@@ -91,7 +91,7 @@ func redactBytes(m *indecis.Model, name string, data js.Value, set settings, pro
 	}
 
 	start := time.Now()
-	res, err := process(m, open, in, out, set)
+	res, err := process(context.Background(), m, open, in, out, set)
 	if err != nil {
 		return nil, fmt.Errorf("le document n'a pas pu être traité : %w", err)
 	}

@@ -55,7 +55,7 @@ type response struct {
 // go-anon's mapping (placeholder -> original) is then exactly the list of
 // what was replaced, with its type. In redaction mode, a second pass over
 // the document turns the placeholders into blocks.
-func process(m *indecis.Model, open func(string) (docprocessor.Walker, error), in, out string, set settings) (*response, error) {
+func process(ctx context.Context, m *indecis.Model, open func(string) (docprocessor.Walker, error), in, out string, set settings) (*response, error) {
 	rec := newRecognizer(m, set.bias)
 	origins := map[string]origin{} // original text -> what the model said of it
 	releasing := newReleasing(rec, set)
@@ -92,10 +92,10 @@ func process(m *indecis.Model, open func(string) (docprocessor.Walker, error), i
 	}); err != nil {
 		return nil, err
 	}
-	if err := read(context.Background(), rec, paragraphs); err != nil {
+	if err := read(ctx, rec, paragraphs); err != nil {
 		return nil, err
 	}
-	session, report, err := proc.ProcessWithReport(walker, anonymizer.WithVerification())
+	session, report, err := proc.ProcessWithReport(ctx, walker, anonymizer.WithVerification())
 	if err != nil {
 		return nil, err
 	}
@@ -135,14 +135,14 @@ func process(m *indecis.Model, open func(string) (docprocessor.Walker, error), i
 	if !sr.OK() {
 		res.Warnings = append(res.Warnings, fmt.Sprintf("surfaces non traitées : %v", sr.Unprocessed))
 	}
-	saver, ok := walker.(interface{ SaveTo(string) error })
+	saver, ok := walker.(docprocessor.Saver)
 	if !ok {
 		return nil, fmt.Errorf("format non enregistrable")
 	}
-	if err := saver.SaveTo(out); err != nil {
+	if err := saver.SaveTo(ctx, out); err != nil {
 		return nil, err
 	}
-	if visual, err := proc.VerifyOutput(walker, out, session); err == nil && len(visual) > 0 {
+	if visual, err := proc.VerifyOutput(ctx, walker, out, session); err == nil && len(visual) > 0 {
 		res.Warnings = append(res.Warnings, fmt.Sprintf("%d élément(s) encore lisible(s) dans le document produit", len(visual)))
 	}
 	return res, nil

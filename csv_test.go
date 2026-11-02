@@ -122,7 +122,7 @@ func TestConcurrentInstances(t *testing.T) {
 			t.Error(err)
 		}
 		docx := filepath.Join(dir, fmt.Sprintf("out%d.docx", i))
-		if _, err := process(models[i], walkers[".docx"], "demo/compte-rendu.docx", docx, settings{bias: bias, strategy: anonymizer.Redact}); err != nil {
+		if _, err := process(context.Background(), models[i], walkers[".docx"], "demo/compte-rendu.docx", docx, settings{bias: bias, strategy: anonymizer.Redact}); err != nil {
 			t.Error(err)
 		}
 		text, err := docxText(docx)
@@ -169,7 +169,7 @@ func TestProcessRelease(t *testing.T) {
 	m := loadModel(t)
 	dir := t.TempDir()
 	run := func(set settings) *response {
-		res, err := process(m, walkers[".docx"], "demo/compte-rendu.docx", filepath.Join(dir, "out.docx"), set)
+		res, err := process(context.Background(), m, walkers[".docx"], "demo/compte-rendu.docx", filepath.Join(dir, "out.docx"), set)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -204,7 +204,7 @@ func TestProcessTrim(t *testing.T) {
 	m := loadModel(t)
 	dir := t.TempDir()
 	run := func(set settings) *response {
-		res, err := process(m, walkers[".docx"], "demo/compte-rendu.docx", filepath.Join(dir, "out.docx"), set)
+		res, err := process(context.Background(), m, walkers[".docx"], "demo/compte-rendu.docx", filepath.Join(dir, "out.docx"), set)
 		if err != nil {
 			t.Fatal(err)
 		}

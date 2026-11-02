@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"regexp"
 	"slices"
@@ -320,9 +321,9 @@ func newReleasing(rec *recognizer.Recognizer, set settings) *releasing {
 }
 
 // Recognize implements anonymizer.Recognizer.
-func (r *releasing) Recognize(text string) ([]ner.Entity, error) {
+func (r *releasing) Recognize(ctx context.Context, text string) ([]ner.Entity, error) {
 	r.found = nil
-	if _, err := r.rec.Recognize(text); err != nil {
+	if _, err := r.rec.Recognize(ctx, text); err != nil {
 		return nil, err
 	}
 	grown := false
